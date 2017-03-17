@@ -1,4 +1,7 @@
 # VITAforecast
+
+![VITAforecast Banner](http://i.imgur.com/JX8pnKF.png)
+
 A PS VITA application that grabs data from api.openweathermap.org, and parses the data to extract relevant details.
 
 ## Instructions:
@@ -10,10 +13,10 @@ A PS VITA application that grabs data from api.openweathermap.org, and parses th
 Please enter your zip code correctly. For example (Use without quotations):
 Format: "ZIPCODE,ID"
 
-"Wv1,GB" = Wolverhampton, UK
-"07001,US" = Avenel, US
-"169-0072,JP" = Tōkyō-to, JP
-"75008,FR" = Palais-Royal, FR
+- "Wv1,GB" = Wolverhampton, UK
+- "07001,US" = Avenel, US
+- "169-0072,JP" = Tōkyō-to, JP
+- "75008,FR" = Palais-Royal, FR
 
 ## Controls:
 - Square: Re-enter zip code and ID. 
