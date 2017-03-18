@@ -93,6 +93,17 @@ double mToMph(double m)
 	return mph;
 }
 
+bool isDay()//basic assumption really
+{
+	SceDateTime time;
+	sceRtcGetCurrentClockLocalTime(&time);
+		
+	if ((time.hour >= 6) && (time.hour <= 18))
+		return true; //Day
+	else 
+		return false; //Night
+}
+
 void displayWeatherContent()
 {
 	char buffer[1024];
@@ -100,7 +111,7 @@ void displayWeatherContent()
 	double c = 0.0, cMin = 0.0, cMax = 0.0, windSpeed = 0.0;
 	
 	readFile("ux0:data/VITAforecast/weather.txt", buffer, 1024);
-	displayWeatherIcon(getWeatherContent(buffer, "main\":\"", "\",\"des"), false);
+	displayWeatherIcon(getWeatherContent(buffer, "main\":\"", "\",\"des"), isDay());
 
 	if ((pressed & SCE_CTRL_SELECT) && (CorF == 0))
 			CorF = 1;
@@ -119,20 +130,20 @@ void displayWeatherContent()
 		vita2d_pvf_draw_textf(font, 30, 160, RGBA8(255, 255, 255, 255), 3.0f, "%.0lf°F", cToF(c));
 		vita2d_pvf_draw_textf(font, 210, 135, RGBA8(255, 255, 255, 255), 1.1f, "Min: %.0lf°F", cToF(cMin));
 		vita2d_pvf_draw_textf(font, 210, 165, RGBA8(255, 255, 255, 255), 1.1f, "Max: %.0lf°F", cToF(cMax));
-		vita2d_pvf_draw_textf(font, 30, 310, RGBA8(255, 255, 255, 255), 1.5f, "Wind: %.02f mph", mToMph(windSpeed));
+		vita2d_pvf_draw_textf(font, 30, 350, RGBA8(255, 255, 255, 255), 1.5f, "Wind: %.02f mph", mToMph(windSpeed));
 	}
 	else
 	{
 		vita2d_pvf_draw_textf(font, 30, 160, RGBA8(255, 255, 255, 255), 3.0f, "%.0lf°C", kelvinToC(c));
 		vita2d_pvf_draw_textf(font, 210, 135, RGBA8(255, 255, 255, 255), 1.1f, "Min: %.0lf°C", kelvinToC(cMin));
 		vita2d_pvf_draw_textf(font, 210, 165, RGBA8(255, 255, 255, 255), 1.1f, "Max: %.0lf°C", kelvinToC(cMax));
-		vita2d_pvf_draw_textf(font, 30, 310, RGBA8(255, 255, 255, 255), 1.5f, "Wind %.02f km/h", mToKm(windSpeed), mToMph(windSpeed)); 
+		vita2d_pvf_draw_textf(font, 30, 350, RGBA8(255, 255, 255, 255), 1.5f, "Wind %.02f km/h", mToKm(windSpeed)); 
 	}
 	
 	vita2d_pvf_draw_textf(font, 30, 230, RGBA8(255, 255, 255, 255), 1.5f, "%s\n", getWeatherContent(buffer, "description\":\"", "\",\"icon"));
 	vita2d_pvf_draw_textf(font, 30, 270, RGBA8(255, 255, 255, 255), 1.5f, "Humidity: %s%%", getWeatherContent(buffer, "humidity\":", ",\"temp_"));
-	
-	//vita2d_pvf_draw_textf(font, 30, 360, RGBA8(255, 255, 255, 255), 1.5f, "%s", buffer2); //debug
+	vita2d_pvf_draw_textf(font, 30, 310, RGBA8(255, 255, 255, 255), 1.5f, "Cloudiness: %s%%", getWeatherContent(buffer, "clouds\":{\"all\":", "},\"dt"));
+	vita2d_pvf_draw_textf(font, 30, 390, RGBA8(255, 255, 255, 255), 1.5f, "Atmospheric pressure: %s hPa", getWeatherContent(buffer, "pressure\":", ",\"humidity"));
 }
 
 void displayWeatherIcon(char * desc, bool day) //Uses main description
