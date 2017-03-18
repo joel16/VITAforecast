@@ -100,13 +100,12 @@ void displayWeatherContent()
 	double c = 0.0, cMin = 0.0, cMax = 0.0, windSpeed = 0.0;
 	
 	readFile("ux0:data/VITAforecast/weather.txt", buffer, 1024);
+	displayWeatherIcon(getWeatherContent(buffer, "main\":\"", "\",\"des"), false);
 
 	if ((pressed & SCE_CTRL_SELECT) && (CorF == 0))
 			CorF = 1;
 	else if ((pressed & SCE_CTRL_SELECT) && (CorF == 1))
 			CorF = 0;
-	
-	displayWeatherIcon(getWeatherContent(buffer, "description\":\"", "\",\"icon"), false);
 	
 	vita2d_pvf_draw_textf(font, 30, 80, RGBA8(255, 255, 255, 255), 2.0f, "%s", getWeatherContent(buffer, "name\":\"", "\",\"cod"));
 	
@@ -132,38 +131,40 @@ void displayWeatherContent()
 	
 	vita2d_pvf_draw_textf(font, 30, 230, RGBA8(255, 255, 255, 255), 1.5f, "%s\n", getWeatherContent(buffer, "description\":\"", "\",\"icon"));
 	vita2d_pvf_draw_textf(font, 30, 270, RGBA8(255, 255, 255, 255), 1.5f, "Humidity: %s%%", getWeatherContent(buffer, "humidity\":", ",\"temp_"));
+	
+	//vita2d_pvf_draw_textf(font, 30, 360, RGBA8(255, 255, 255, 255), 1.5f, "%s", buffer2); //debug
 }
 
-void displayWeatherIcon(char * desc, bool day)
+void displayWeatherIcon(char * desc, bool day) //Uses main description
 {
 	if (day == true)
 	{
-		if (strstr(desc, "clear") == 0)
+		if (strcmp(desc, "Clear") == 0)
 			vita2d_draw_texture(dClearSky, 330, 40);
-		else if (strstr(desc, "clouds") == 0)
+		else if (strcmp(desc, "Clouds") == 0)
 			vita2d_draw_texture(dClouds, 330, 40);
-		else if (strstr(desc, "rain") != NULL)
+		else if ((strcmp(desc, "Rain") == 0) || (strcmp(desc, "Drizzle") == 0))
 			vita2d_draw_texture(dRain, 330, 40);
-		else if (strstr(desc, "thunderstorm") == 0)
+		else if ((strcmp(desc, "Thunderstorm") == 0) || (strcmp(desc, "Extreme") == 0))
 			vita2d_draw_texture(dThunderstorm, 330, 40);
-		else if (strstr(desc, "snow") == 0)
+		else if (strcmp(desc, "Snow") == 0)
 			vita2d_draw_texture(dSnow, 330, 40);
-		else if (strstr(desc, "mist") == 0)
+		else if (strcmp(desc, "Atmosphere") == 0)
 			vita2d_draw_texture(mist, 330, 40);
 	}
 	else
 	{
-		if (strstr(desc, "clear") == 0)
+		if (strcmp(desc, "Clear") == 0)
 			vita2d_draw_texture(nClearSky, 330, 40);
-		else if (strstr(desc, "clouds") == 0)
+		else if (strcmp(desc, "Clouds") == 0)
 			vita2d_draw_texture(nClouds, 330, 40);
-		else if (strstr(desc, "rain") != NULL)
+		else if ((strcmp(desc, "Rain") == 0) || (strcmp(desc, "Drizzle") == 0))
 			vita2d_draw_texture(nRain, 330, 40);
-		else if (strstr(desc, "thunderstorm") == 0)
+		else if ((strcmp(desc, "Thunderstorm") == 0) || (strcmp(desc, "Extreme") == 0))
 			vita2d_draw_texture(nThunderstorm, 330, 40);
-		else if (strstr(desc, "snow") == 0)
+		else if (strcmp(desc, "Snow") == 0)
 			vita2d_draw_texture(nSnow, 330, 40);
-		else if (strstr(desc, "mist") == 0)
+		else if (strcmp(desc, "Atmosphere") == 0)
 			vita2d_draw_texture(mist, 330, 40);
 	}
 }

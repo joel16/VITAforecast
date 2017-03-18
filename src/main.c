@@ -33,8 +33,14 @@ int mainMenu()
 		
 		if (pressed & SCE_CTRL_SQUARE)
 		{
-			strcpy(zip, keyboard_vita_get("Enter zip-code and country ID. Example: 07001,US", 10));
-			WriteFile("ux0:data/VITAforecast/zipCode.txt", zip, 10);
+			strcpy(zip, keyboard_vita_get("Enter zip and country ID, e.g: '07001,us'", 12));
+			writeFile("ux0:data/VITAforecast/zipCode.txt", zip, 12);
+		}
+		
+		if (pressed & SCE_CTRL_TRIANGLE)
+		{
+			vita2d_clear_screen();
+			mainMenu();
 		}
 		
 		if (pressed & SCE_CTRL_START)
@@ -94,16 +100,16 @@ int main(int argc, char *argv[])
 	vita2d_clear_screen();
 	vita2d_draw_texture(gekihen, 0, 0);
 	endDrawing();
-	sceKernelDelayThread(4 * 1000 * 1000);//delay 4 seconds
+	sceKernelDelayThread(3 * 1000 * 1000);//delay 4 seconds
 	vita2d_clear_screen();
 	
 	
 	if (fileExists("ux0:data/VITAforecast/zipCode.txt"))
-		readFile("ux0:data/VITAforecast/zipCode.txt", zip, 10);
+		readFile("ux0:data/VITAforecast/zipCode.txt", zip, 12);
 	else
 	{
-		strcpy(zip, keyboard_vita_get("Enter zip-code and country ID. Example: 07001,US", 10));
-		WriteFile("ux0:data/VITAforecast/zipCode.txt", zip, 10);
+		strcpy(zip, keyboard_vita_get("Enter zip and country ID, e.g: '07001,us'", 12));
+		writeFile("ux0:data/VITAforecast/zipCode.txt", zip, 12);
 	}
 	
 	char buffer[1024];

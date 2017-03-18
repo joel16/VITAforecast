@@ -14,9 +14,10 @@ typedef struct {
 	void *unk;
 } SceIoDevInfo;
 
-int fileExists(const char* path);
-int dirExists(const char* path);
+int fileExists(const char *path);
+int dirExists(const char *path);
 int readFile(char *file, void *buf, int size);
-int WriteFile(char *file, void *buf, int size);
+int writeFile(char *file, void *buf, int size);
+int removeFile(char *file);
 
 #endif

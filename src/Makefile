@@ -25,7 +25,7 @@ LIBS := -lvita2d -lSceDisplay_stub -lSceGxm_stub \
 all: $(TARGET).vpk
 
 %.vpk: eboot.bin
-	vita-mksfoex -d PARENTAL_LEVEL=1 -s APP_VER=00.01 -s TITLE_ID=$(TITLE_ID) "$(PROJECT_TITLE)" param.sfo
+	vita-mksfoex -d PARENTAL_LEVEL=1 -s APP_VER=01.00 -s TITLE_ID=$(TITLE_ID) "$(PROJECT_TITLE)" param.sfo
 	vita-pack-vpk -s param.sfo -b eboot.bin \
 		--add ../sce_sys/icon0.png=sce_sys/icon0.png \
 		--add ../sce_sys/livearea/contents/bg.png=sce_sys/livearea/contents/bg.png \
