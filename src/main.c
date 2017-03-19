@@ -92,34 +92,15 @@ int main(int argc, char *argv[])
 	if(ret != 0) 
 		netAccess = true;
 	httpInit();
-	
-	createWeatherDir();
-	
 
 	vita2d_start_drawing();
 	vita2d_clear_screen();
 	vita2d_draw_texture(gekihen, 0, 0);
 	endDrawing();
-	sceKernelDelayThread(3 * 1000 * 1000);//delay 4 seconds
+	sceKernelDelayThread(2 * 1000 * 1000); //delay 2 seconds
 	vita2d_clear_screen();
 	
-	
-	if (fileExists("ux0:data/VITAforecast/zipCode.txt"))
-		readFile("ux0:data/VITAforecast/zipCode.txt", zip, 12);
-	else
-	{
-		strcpy(zip, keyboard_vita_get("Enter zip and country ID, e.g: '07001,us'", 12));
-		writeFile("ux0:data/VITAforecast/zipCode.txt", zip, 12);
-	}
-	
-	char buffer[1024];
-	if (fileExists("ux0:data/VITAforecast/weather.txt"))
-		readFile("ux0:data/VITAforecast/weather.txt", buffer, 1024);
-	
-	if ((strcmp(getWeatherContent(buffer, "country\":\"", "\",\"sunr"), "US") == 0) || (strcmp(getWeatherContent(buffer, "country\":\"", "\",\"sunr"), "us") == 0))
-		CorF = 0;
-	else
-		CorF = 1;
+	initWeatherData();
 	
 	while(1)
 	{

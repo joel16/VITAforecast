@@ -34,7 +34,7 @@ all: $(TARGET).vpk
 	$(TARGET).vpk
 	
 eboot.bin: $(TARGET).velf
-	vita-make-fself -c $< $@
+	vita-make-fself -s -c $< $@
 
 %.velf: %.elf
 	$(PREFIX)-strip -g $<

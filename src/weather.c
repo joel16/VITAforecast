@@ -1,11 +1,14 @@
 #include "fs.h"
+#include "ime_dialog.h"
 #include "main.h"
 #include "net.h"
 #include "utils.h"
 #include "weather.h"
 
-void createWeatherDir()
+void initWeatherData()
 {
+	char buffer[1024], buffer2[2];
+	
 	if (!(dirExists("ux0:/data/VITAforecast")))
 	{
 		SceUID dir;
@@ -13,6 +16,43 @@ void createWeatherDir()
 		dir = sceIoDopen("ux0:/data/VITAforecast");
 		sceIoMkdir("ux0:/data/VITAforecast", 0777);
 		sceIoDclose(dir);
+	}
+	
+	if (fileExists("ux0:data/VITAforecast/zipCode.txt"))
+		readFile("ux0:data/VITAforecast/zipCode.txt", zip, 12);
+	else
+	{
+		strcpy(zip, keyboard_vita_get("Enter zip and country ID, e.g: '07001,us'", 12));
+		writeFile("ux0:data/VITAforecast/zipCode.txt", zip, 12);
+	}
+	
+	vita2d_start_drawing();
+	vita2d_clear_screen();
+	downloadWeatherData();
+	endDrawing();
+	
+	if (fileExists("ux0:data/VITAforecast/weather.txt"))
+		readFile("ux0:data/VITAforecast/weather.txt", buffer, 1024);
+	
+	if (fileExists("ux0:data/VITAforecast/metricUnits.txt"))
+	{
+		readFile("ux0:data/VITAforecast/metricUnits.txt", buffer2, 2);
+		sscanf(buffer2, "%d", &CorF);
+	}
+	else
+	{
+		if (strcmp((getWeatherContent(buffer, "country\":\"", "\",\"sunrise")), "US") == 0)
+		{
+			sprintf(buffer2, "0");
+			writeFile("ux0:data/VITAforecast/metricUnits.txt", buffer2, 2);
+			sscanf(buffer2, "%d", &CorF);
+		}
+		else
+		{
+			sprintf(buffer2, "1");
+			writeFile("ux0:data/VITAforecast/metricUnits.txt", buffer2, 2);
+			sscanf(buffer2, "%d", &CorF);
+		}
 	}
 }
 
@@ -111,39 +151,60 @@ void displayWeatherContent()
 	double c = 0.0, cMin = 0.0, cMax = 0.0, windSpeed = 0.0;
 	
 	readFile("ux0:data/VITAforecast/weather.txt", buffer, 1024);
-	displayWeatherIcon(getWeatherContent(buffer, "main\":\"", "\",\"des"), isDay());
-
-	if ((pressed & SCE_CTRL_SELECT) && (CorF == 0))
-			CorF = 1;
-	else if ((pressed & SCE_CTRL_SELECT) && (CorF == 1))
-			CorF = 0;
 	
-	vita2d_pvf_draw_textf(font, 30, 80, RGBA8(255, 255, 255, 255), 2.0f, "%s", getWeatherContent(buffer, "name\":\"", "\",\"cod"));
-	
-	c = strToDouble(getWeatherContent(buffer, "temp\":", ",\"pressure"));
-	cMin = strToDouble(getWeatherContent(buffer, "temp_min\":", ",\"temp_max"));
-	cMax = strToDouble(getWeatherContent(buffer, "temp_max\":", "},\"visibility"));
-	windSpeed = strToDouble(getWeatherContent(buffer, "speed\":", ",\"deg"));
-	
-	if (CorF == 0)
+	if((getFileSize("ux0:data/VITAforecast/weather.txt")) <= 0)
 	{
-		vita2d_pvf_draw_textf(font, 30, 160, RGBA8(255, 255, 255, 255), 3.0f, "%.0lf°F", cToF(c));
-		vita2d_pvf_draw_textf(font, 210, 135, RGBA8(255, 255, 255, 255), 1.1f, "Min: %.0lf°F", cToF(cMin));
-		vita2d_pvf_draw_textf(font, 210, 165, RGBA8(255, 255, 255, 255), 1.1f, "Max: %.0lf°F", cToF(cMax));
-		vita2d_pvf_draw_textf(font, 30, 350, RGBA8(255, 255, 255, 255), 1.5f, "Wind: %.02f mph", mToMph(windSpeed));
+		vita2d_pvf_draw_textf(font, 30, 80, RGBA8(255, 255, 255, 255), 1.5f, "Error receiving data. The data could not be downloaded.");
+		vita2d_pvf_draw_textf(font, 30, 120, RGBA8(255, 255, 255, 255), 1.5f, "Please ensure that you have a working net connection.");
+	}
+	else if (strcmp(buffer, "{\"cod\":\"500\",\"message\":\"Internal error: 500000\"}") == 0)
+	{
+		vita2d_pvf_draw_textf(font, 30, 80, RGBA8(255, 255, 255, 255), 1.5f, "Error parsing data. Zip code cannot be validated.");
+		vita2d_pvf_draw_textf(font, 30, 120, RGBA8(255, 255, 255, 255), 1.5f, "Press square and renter zip and country code.");
 	}
 	else
 	{
-		vita2d_pvf_draw_textf(font, 30, 160, RGBA8(255, 255, 255, 255), 3.0f, "%.0lf°C", kelvinToC(c));
-		vita2d_pvf_draw_textf(font, 210, 135, RGBA8(255, 255, 255, 255), 1.1f, "Min: %.0lf°C", kelvinToC(cMin));
-		vita2d_pvf_draw_textf(font, 210, 165, RGBA8(255, 255, 255, 255), 1.1f, "Max: %.0lf°C", kelvinToC(cMax));
-		vita2d_pvf_draw_textf(font, 30, 350, RGBA8(255, 255, 255, 255), 1.5f, "Wind %.02f km/h", mToKm(windSpeed)); 
-	}
+		displayWeatherIcon(getWeatherContent(buffer, "main\":\"", "\",\"des"), isDay());
 	
-	vita2d_pvf_draw_textf(font, 30, 230, RGBA8(255, 255, 255, 255), 1.5f, "%s\n", getWeatherContent(buffer, "description\":\"", "\",\"icon"));
-	vita2d_pvf_draw_textf(font, 30, 270, RGBA8(255, 255, 255, 255), 1.5f, "Humidity: %s%%", getWeatherContent(buffer, "humidity\":", ",\"temp_"));
-	vita2d_pvf_draw_textf(font, 30, 310, RGBA8(255, 255, 255, 255), 1.5f, "Cloudiness: %s%%", getWeatherContent(buffer, "clouds\":{\"all\":", "},\"dt"));
-	vita2d_pvf_draw_textf(font, 30, 390, RGBA8(255, 255, 255, 255), 1.5f, "Atmospheric pressure: %s hPa", getWeatherContent(buffer, "pressure\":", ",\"humidity"));
+		vita2d_pvf_draw_textf(font, 30, 80, RGBA8(255, 255, 255, 255), 2.0f, "%s", getWeatherContent(buffer, "name\":\"", "\",\"cod"));
+	
+		c = strToDouble(getWeatherContent(buffer, "temp\":", ",\"pressure"));
+		cMin = strToDouble(getWeatherContent(buffer, "temp_min\":", ",\"temp_max"));
+		cMax = strToDouble(getWeatherContent(buffer, "temp_max\":", "},\"visibility"));
+		windSpeed = strToDouble(getWeatherContent(buffer, "speed\":", ",\"deg"));
+	
+		if (CorF == 0)
+		{
+			vita2d_pvf_draw_textf(font, 30, 160, RGBA8(255, 255, 255, 255), 3.0f, "%.0lf°F", cToF(c));
+			vita2d_pvf_draw_textf(font, 210, 135, RGBA8(255, 255, 255, 255), 1.1f, "Min: %.0lf°F", cToF(cMin));
+			vita2d_pvf_draw_textf(font, 210, 165, RGBA8(255, 255, 255, 255), 1.1f, "Max: %.0lf°F", cToF(cMax));
+			vita2d_pvf_draw_textf(font, 30, 350, RGBA8(255, 255, 255, 255), 1.5f, "Wind: %.02f mph", mToMph(windSpeed));
+			
+			if (pressed & SCE_CTRL_SELECT)
+			{
+				CorF = 1;
+				writeFile("ux0:data/VITAforecast/metricUnits.txt", "1", 2);
+			}
+		}
+		else
+		{
+			vita2d_pvf_draw_textf(font, 30, 160, RGBA8(255, 255, 255, 255), 3.0f, "%.0lf°C", kelvinToC(c));
+			vita2d_pvf_draw_textf(font, 210, 135, RGBA8(255, 255, 255, 255), 1.1f, "Min: %.0lf°C", kelvinToC(cMin));
+			vita2d_pvf_draw_textf(font, 210, 165, RGBA8(255, 255, 255, 255), 1.1f, "Max: %.0lf°C", kelvinToC(cMax));
+			vita2d_pvf_draw_textf(font, 30, 350, RGBA8(255, 255, 255, 255), 1.5f, "Wind %.02f km/h", mToKm(windSpeed)); 
+			
+			if (pressed & SCE_CTRL_SELECT)
+			{
+				CorF = 0;
+				writeFile("ux0:data/VITAforecast/metricUnits.txt", "0", 2);
+			}
+		}
+		
+		vita2d_pvf_draw_textf(font, 30, 230, RGBA8(255, 255, 255, 255), 1.5f, "%s\n", getWeatherContent(buffer, "description\":\"", "\",\"icon"));
+		vita2d_pvf_draw_textf(font, 30, 270, RGBA8(255, 255, 255, 255), 1.5f, "Humidity: %s%%", getWeatherContent(buffer, "humidity\":", ",\"temp_"));
+		vita2d_pvf_draw_textf(font, 30, 310, RGBA8(255, 255, 255, 255), 1.5f, "Cloudiness: %s%%", getWeatherContent(buffer, "clouds\":{\"all\":", "},\"dt"));
+		vita2d_pvf_draw_textf(font, 30, 390, RGBA8(255, 255, 255, 255), 1.5f, "Atmospheric pressure: %s hPa", getWeatherContent(buffer, "pressure\":", ",\"humidity"));
+	}
 }
 
 void displayWeatherIcon(char * desc, bool day) //Uses main description

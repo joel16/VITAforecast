@@ -40,7 +40,7 @@ extern unsigned char _binary_res_mist_png_start;
 
 int CorF;
 
-void createWeatherDir();
+void initWeatherData();
 int getWeatherZip();
 int downloadWeatherData();
 char * getWeatherContent(char * string, char * str1, char * str2);

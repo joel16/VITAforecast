@@ -58,3 +58,15 @@ int removeFile(char *file)
 {
 	return sceIoRemove(file);
 }
+
+int getFileSize(const char *file) 
+{
+	SceUID fd = sceIoOpen(file, SCE_O_RDONLY, 0);
+	if (fd < 0)
+		return fd;
+
+	int fileSize = sceIoLseek(fd, 0, SCE_SEEK_END);
+	
+	sceIoClose(fd);
+	return fileSize;
+}
